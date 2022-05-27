@@ -1066,8 +1066,14 @@ def _normalize_function(func: Callable) -> tuple | str | bytes:
 
             return cloudpickle.dumps(func, protocol=4)
         except Exception:
-            return str(func)
-
+            if not config.get("tokenize.ensure-deterministic"):
+                return str(func)
+            raise RuntimeError(
+                            f"callable with type {str(type(func))} cannot "
+                            "be deterministically hashed. Please, see "
+                            "https://docs.dask.org/en/latest/custom-collections.html#implementing-deterministic-hashing" # noqa: E501
+                            "for more information"
+                        )
 
 def normalize_dataclass(obj):
     fields = [
